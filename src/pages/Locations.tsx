@@ -12,7 +12,7 @@ export function Locations() {
   return (
     <>
       <section className="bg-oat pt-32 pb-16 md:pt-40 md:pb-20">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <SectionHeading
             eyebrow="Visit us"
             title="Find us on Wolf Road"
@@ -22,7 +22,7 @@ export function Locations() {
       </section>
 
       <section className="pb-24 md:pb-32">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <Reveal>
             <article className="group overflow-hidden rounded-2xl border border-espresso/5 bg-parchment">
               <div className="grid lg:grid-cols-2">
@@ -100,7 +100,7 @@ export function Locations() {
       </section>
 
       <section className="border-t border-espresso/5 bg-espresso py-20 md:py-28">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <SectionHeading
             eyebrow="Hours"
             title="Open seven days a week"
