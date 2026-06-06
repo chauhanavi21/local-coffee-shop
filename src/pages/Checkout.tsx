@@ -119,7 +119,7 @@ export function Checkout() {
   return (
     <>
       <section className="border-b border-espresso/5 bg-espresso pt-28 pb-10 md:pt-36 md:pb-14">
-        <div className="mx-auto max-w-3xl px-5 md:px-8">
+        <div className="page-shell max-w-3xl">
           <button
             type="button"
             onClick={() => navigate("/order")}
@@ -142,7 +142,7 @@ export function Checkout() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-3xl px-5 py-10 md:px-8 md:py-14">
+      <div className="page-shell max-w-3xl py-10 md:py-14">
         <div className="grid gap-10 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <Reveal>
