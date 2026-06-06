@@ -37,6 +37,10 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-[min(100%,96vw)] px-3 sm:px-4 lg:px-5;
+  }
 }
 
 /* Lightweight scroll reveals — no JS animation library needed */
