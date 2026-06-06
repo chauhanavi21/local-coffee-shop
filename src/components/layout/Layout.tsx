@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
+import { DbConnectionBar } from "./DbConnectionBar";
 
 export function Layout() {
   return (
@@ -8,6 +9,7 @@ export function Layout() {
       <Navbar />
       <main className="flex-1">
         <Outlet />
+        <DbConnectionBar variant="body" />
       </main>
       <Footer />
     </div>
