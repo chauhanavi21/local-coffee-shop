@@ -97,6 +97,9 @@ export const api = {
     }),
 
   getOffers: () => request<{ offers: OfferDTO[] }>("/offers"),
+
+  health: () =>
+    request<{ ok: boolean; db: number; cluster: string }>("/health"),
 };
 
 export interface UserDTO {
