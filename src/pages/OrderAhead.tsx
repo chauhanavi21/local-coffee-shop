@@ -73,7 +73,7 @@ export function OrderAhead() {
   return (
     <>
       <section className="border-b border-espresso/5 bg-espresso pt-28 pb-10 md:pt-36 md:pb-14">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <Reveal>
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.25em] text-amber">
               Order ahead
@@ -89,7 +89,7 @@ export function OrderAhead() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
+      <div className="page-shell py-10 md:py-14">
         {offers.length > 0 && (
           <Reveal className="mb-10">
             <div className="rounded-2xl border border-copper/20 bg-oat p-6">
