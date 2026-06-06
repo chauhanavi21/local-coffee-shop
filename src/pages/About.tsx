@@ -48,7 +48,7 @@ export function About() {
           className="absolute inset-0 h-full w-full opacity-50"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-espresso via-espresso/50 to-transparent" />
-        <div className="relative mx-auto w-full max-w-7xl px-5 pb-20 md:px-8 md:pb-28">
+        <div className="page-shell relative pb-20 md:pb-28">
           <Reveal>
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-amber">
               Our story
@@ -61,7 +61,7 @@ export function About() {
       </section>
 
       <section className="py-24 md:py-32">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <div className="grid items-center gap-16 lg:grid-cols-2">
             <SectionHeading
               eyebrow="Who we are"
@@ -83,7 +83,7 @@ export function About() {
       </section>
 
       <section className="bg-oat py-24 md:py-32">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <SectionHeading
             eyebrow="What we do"
             title="More than a cup of coffee"
@@ -108,7 +108,7 @@ export function About() {
       </section>
 
       <section className="py-24 md:py-32">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <div className="grid gap-8 lg:grid-cols-2">
             <Reveal>
               <div className="overflow-hidden rounded-2xl">
@@ -133,7 +133,7 @@ export function About() {
       </section>
 
       <section className="bg-espresso py-24 md:py-32">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <SectionHeading
             eyebrow="Values"
             title="Why locals keep coming back"
@@ -155,7 +155,7 @@ export function About() {
       </section>
 
       <section className="py-24 text-center md:py-32">
-        <div className="mx-auto max-w-2xl px-5 md:px-8">
+        <div className="page-shell max-w-2xl">
           <Reveal>
             <h2 className="font-display text-4xl text-espresso md:text-5xl">
               Come see us on Wolf Road
