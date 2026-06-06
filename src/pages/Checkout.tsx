@@ -71,7 +71,7 @@ export function Checkout() {
 
   if (paid && confirmation && user) {
     return (
-      <section className="flex min-h-[80vh] items-center justify-center px-5 py-32">
+      <section className="flex min-h-[80vh] items-center justify-center px-3 py-32 sm:px-4">
         <Reveal className="max-w-md text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-sage/20 text-sage">
             <Check size={28} />
