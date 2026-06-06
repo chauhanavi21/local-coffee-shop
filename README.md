@@ -41,7 +41,7 @@ PORT=5000
 VITE_API_URL=http://localhost:5000/api
 ```
 
-MongoDB must be running locally, or point `MONGODB_URI` at MongoDB Atlas.
+The app connects to MongoDB Atlas. The active connection string is shown in the site header and page body. Copy `.env.example` to `.env` or set `MONGODB_URI` to your cluster URI.
 
 ### 3. Run dev (frontend + API)
 
