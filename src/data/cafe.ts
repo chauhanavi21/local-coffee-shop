@@ -24,4 +24,5 @@ export const cafe = {
   },
   /** Menu prices sourced from Grubhub / official ordering (2025–2026) */
   menuSource: "Menu & prices reflect in-store and Grubhub listings.",
+  database: "MongoDB Atlas · cluster0.5qspsln.mongodb.net",
 } as const;
