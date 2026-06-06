@@ -22,7 +22,7 @@ export function Menu() {
   return (
     <>
       <section className="relative overflow-hidden bg-espresso pt-32 pb-20 md:pt-40 md:pb-28">
-        <div className="relative mx-auto max-w-7xl px-5 md:px-8">
+        <div className="relative page-shell">
           <Reveal>
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-amber">
               The menu
@@ -39,7 +39,7 @@ export function Menu() {
       </section>
 
       <section className="sticky top-[72px] z-30 border-b border-espresso/5 bg-parchment/95">
-        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-5 py-4 md:px-8">
+        <div className="page-shell flex gap-2 overflow-x-auto py-4">
           <FilterButton
             active={active === "all"}
             onClick={() => setActive("all")}
@@ -59,7 +59,7 @@ export function Menu() {
       </section>
 
       <section className="py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((item) => (
               <article
@@ -100,7 +100,7 @@ export function Menu() {
       </section>
 
       <section className="border-t border-espresso/5 bg-oat py-20 md:py-28">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <SectionHeading
             eyebrow="Retail"
             title="Take the roast home"
