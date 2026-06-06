@@ -16,7 +16,7 @@ export function Contact() {
   return (
     <>
       <section className="relative overflow-hidden bg-espresso pt-32 pb-20 md:pt-40">
-        <div className="relative mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell relative">
           <Reveal>
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em] text-amber">
               Contact
@@ -29,7 +29,7 @@ export function Contact() {
       </section>
 
       <section className="py-16 md:py-24">
-        <div className="mx-auto grid max-w-7xl gap-16 px-5 lg:grid-cols-2 lg:gap-20 md:px-8">
+        <div className="page-shell grid gap-16 lg:grid-cols-2 lg:gap-20">
           <Reveal>
             <div className="overflow-hidden rounded-2xl">
               <SmartImage
