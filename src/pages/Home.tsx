@@ -74,7 +74,7 @@ export function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-espresso via-espresso/60 to-espresso/30" />
         </div>
 
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-5 pb-24 pt-32 md:px-8 md:pb-32">
+        <div className="page-shell relative z-10 pb-24 pt-36 md:pb-32">
           <Reveal delay={100}>
             <p className="mb-6 text-xs font-semibold uppercase tracking-[0.3em] text-amber">
               Albany, New York · Coffee Sanctuary
@@ -132,7 +132,7 @@ export function Home() {
       </section>
 
       <section className="py-24 md:py-32">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <SectionHeading
             eyebrow="Best sellers"
             title="Start with what Albany orders most"
@@ -173,7 +173,7 @@ export function Home() {
       </section>
 
       <section className="bg-espresso py-24 md:py-32">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <Reveal direction="left">
               <div className="overflow-hidden rounded-2xl">
@@ -243,7 +243,7 @@ export function Home() {
       </section>
 
       <section className="border-y border-espresso/5 py-20 md:py-28">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <StaggerContainer className="grid gap-12 md:grid-cols-3">
             {stats.map((stat) => (
               <StaggerItem key={stat.label} className="text-center">
@@ -260,7 +260,7 @@ export function Home() {
       </section>
 
       <section className="py-24 md:py-32">
-        <div className="mx-auto max-w-7xl px-5 md:px-8">
+        <div className="page-shell">
           <SectionHeading
             eyebrow="Reviews"
             title="What Albany is saying"
@@ -290,7 +290,7 @@ export function Home() {
           <SmartImage src="/images/about-team.jpg" alt="" />
           <div className="absolute inset-0 bg-espresso/75" />
         </div>
-        <div className="relative mx-auto max-w-3xl px-5 text-center md:px-8">
+        <div className="page-shell relative max-w-3xl text-center">
           <Reveal>
             <h2 className="font-display text-4xl text-parchment md:text-6xl lg:text-7xl">
               Visit us on Wolf Road
