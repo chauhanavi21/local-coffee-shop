@@ -28,7 +28,7 @@ const footerLinks = {
 export function Footer() {
   return (
     <footer className="bg-espresso text-crema">
-      <div className="mx-auto max-w-7xl px-5 py-16 md:px-8 md:py-24">
+      <div className="page-shell py-16 md:py-24">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <Link to="/" className="font-display text-2xl text-parchment md:text-3xl">
