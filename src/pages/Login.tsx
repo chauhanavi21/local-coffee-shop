@@ -33,7 +33,7 @@ export function Login() {
   };
 
   return (
-    <section className="flex min-h-[85vh] items-center justify-center px-5 py-32">
+    <section className="flex min-h-[85vh] items-center justify-center px-3 py-32 sm:px-4">
       <Reveal className="w-full max-w-md">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-copper">
           Member login
