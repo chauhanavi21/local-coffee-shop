@@ -3,11 +3,10 @@ import { RetailBean } from "../models/RetailBean.js";
 import { MENU_SEED, RETAIL_SEED } from "../data/menuSeed.js";
 
 export async function seedMenuIfEmpty() {
-  const menuCount = await MenuItem.countDocuments();
-  if (menuCount === 0) {
-    await MenuItem.insertMany(MENU_SEED);
-    console.log(`Seeded ${MENU_SEED.length} menu items`);
+  for (const item of MENU_SEED) {
+    await MenuItem.findOneAndUpdate({ slug: item.slug }, { $set: item }, { upsert: true });
   }
+  console.log(`Synced ${MENU_SEED.length} menu items (images + details)`);
 
   const beanCount = await RetailBean.countDocuments();
   if (beanCount === 0) {
