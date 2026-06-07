@@ -4,25 +4,8 @@ import { ButtonLink } from "../components/ui/Button";
 import { Reveal, StaggerContainer, StaggerItem } from "../components/ui/Reveal";
 import { SectionHeading } from "../components/ui/SectionHeading";
 import { SmartImage } from "../components/ui/SmartImage";
+import { useMenu } from "../context/MenuContext";
 import { cafe } from "../data/cafe";
-
-const featured = [
-  {
-    name: "Café Latte",
-    note: "Best seller · from $3.90",
-    image: "/images/featured-1.jpg",
-  },
-  {
-    name: "Cappawappacino Latte",
-    note: "Caramel, cinnamon, hazelnut & vanilla",
-    image: "/images/featured-2.jpg",
-  },
-  {
-    name: "Eggs & Cheese Sandwich",
-    note: "Breakfast favorite · $9.60",
-    image: "/images/featured-3.jpg",
-  },
-];
 
 const stats = [
   { value: "Roasted", label: "In-house, on Wolf Road" },
@@ -60,6 +43,8 @@ const marqueeItems = [
 ];
 
 export function Home() {
+  const { featured } = useMenu();
+
   return (
     <>
       <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-espresso">
@@ -141,7 +126,7 @@ export function Home() {
 
           <StaggerContainer className="mt-16 grid gap-6 md:grid-cols-3">
             {featured.map((item) => (
-              <StaggerItem key={item.name}>
+              <StaggerItem key={item.id}>
                 <Link
                   to="/order"
                   className="group relative block overflow-hidden rounded-2xl bg-oat"
@@ -156,7 +141,7 @@ export function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-espresso/80 via-espresso/20 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-6 md:p-8">
                     <p className="text-xs uppercase tracking-[0.15em] text-amber">
-                      {item.note}
+                      {item.tag ?? "Featured"} · ${item.price.toFixed(2)}
                     </p>
                     <h3 className="mt-2 font-display text-2xl text-parchment md:text-3xl">
                       {item.name}

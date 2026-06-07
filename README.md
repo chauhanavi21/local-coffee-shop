@@ -11,12 +11,13 @@ A multi-page website for **Professor Java's Coffee Sanctuary**, a real coffee sh
 | **Hours** | Mon–Sat 7am–9pm · Sun 7am–7pm |
 | **Website** | [professorjavas.com](https://professorjavas.com) |
 
-Menu items and prices are sourced from Grubhub / in-store listings (2025–2026).
+Menu items and prices are loaded from MongoDB (seeded on first API start).
 
 ## Features
 
 - **Member accounts** — Sign up / sign in with JWT auth
 - **Personal cart** — Items added from the menu or order page are saved per customer in MongoDB
+- **MongoDB menu** — Products, prices, descriptions, and images served from the database
 - **Member offers** — Welcome discount, pastry Friday, and rewards points
 - **Order ahead** — Pickup ordering with demo checkout
 
@@ -31,17 +32,15 @@ npm install
 
 ### 2. Environment
 
-Copy `.env.example` to `.env` (already included for local dev):
+Create a local `.env` file (this file is gitignored and never committed):
 
 ```env
-MONGODB_URI=mongodb://127.0.0.1:27017/professor-javas
-JWT_SECRET=change-this-to-a-long-random-secret-in-production
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<dbname>?retryWrites=true
+JWT_SECRET=generate-a-long-random-secret
 JWT_EXPIRES_IN=7d
 PORT=5000
 VITE_API_URL=http://localhost:5000/api
 ```
-
-The app connects to MongoDB Atlas. The active connection string is shown in the site header and page body. Copy `.env.example` to `.env` or set `MONGODB_URI` to your cluster URI.
 
 ### 3. Run dev (frontend + API)
 
@@ -51,6 +50,9 @@ npm run dev
 
 - Frontend: [http://localhost:5173](http://localhost:5173)
 - API: [http://localhost:5000/api/health](http://localhost:5000/api/health)
+- Menu: [http://localhost:5000/api/menu](http://localhost:5000/api/menu)
+
+On first run the API seeds the menu into MongoDB if the collection is empty.
 
 ### 4. Try the flow
 
@@ -61,8 +63,8 @@ npm run dev
 
 ## Pages
 
-- **Home** — Hero, best sellers, story, reviews
-- **Menu** — Full menu with add-to-order (requires login)
+- **Home** — Hero, best sellers from DB, story, reviews
+- **Menu** — Full menu from MongoDB with add-to-order (requires login)
 - **Order Ahead** — Personal cart, member offers, pickup time
 - **Login / Signup** — Member accounts
 - **About** — Real business story

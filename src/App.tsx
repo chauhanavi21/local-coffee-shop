@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { AuthProvider } from "./context/AuthContext";
+import { MenuProvider } from "./context/MenuContext";
 import { CartProvider } from "./context/CartContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
@@ -45,6 +46,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <MenuProvider>
         <CartProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -76,6 +78,7 @@ export default function App() {
             </Routes>
           </Suspense>
         </CartProvider>
+        </MenuProvider>
       </AuthProvider>
     </BrowserRouter>
   );

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { User } from "../models/User.js";
 import { authRequired } from "../middleware/auth.js";
-import { MEMBER_OFFERS, VALID_MENU_IDS } from "../data/offers.js";
+import { MenuItem } from "../models/MenuItem.js";
 
 const router = Router();
 
@@ -31,7 +31,8 @@ router.post("/items", authRequired, async (req, res) => {
     const { menuItemId, size = "regular", milk = "whole", notes = "", quantity = 1 } =
       req.body;
 
-    if (!VALID_MENU_IDS.has(menuItemId)) {
+    const menuItem = await MenuItem.findOne({ slug: menuItemId, active: true });
+    if (!menuItem) {
       return res.status(400).json({ error: "Invalid menu item" });
     }
 

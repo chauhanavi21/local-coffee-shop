@@ -21,10 +21,10 @@ import {
   type SizeOption,
 } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { menuItems, menuCategories, type MenuCategory } from "../data/menu";
+import { useMenu } from "../context/MenuContext";
 import { locations } from "../data/locations";
 import { cafe } from "../data/cafe";
-import type { MenuItem } from "../data/menu";
+import type { MenuCategory, MenuItem } from "../types/menu";
 
 const pickupSlots = ["In 15 min", "In 30 min", "In 45 min", "In 1 hour"];
 
@@ -36,6 +36,7 @@ const milkOptions: { id: MilkOption; label: string }[] = [
 
 export function OrderAhead() {
   const { user, offers } = useAuth();
+  const { items: menuItems, categories: menuCategories, loading: menuLoading } = useMenu();
   const cart = useCart();
   const navigate = useNavigate();
   const [category, setCategory] = useState<MenuCategory | "all">("all");
@@ -59,7 +60,7 @@ export function OrderAhead() {
       );
     }
     return items;
-  }, [category, search]);
+  }, [category, search, menuItems]);
 
   const handleQuickAdd = async (item: MenuItem) => {
     setAddingId(item.id);
@@ -90,6 +91,12 @@ export function OrderAhead() {
       </section>
 
       <div className="page-shell py-10 md:py-14">
+        {menuLoading ? (
+          <div className="flex min-h-[40vh] items-center justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-oat border-t-copper" />
+          </div>
+        ) : (
+        <>
         {offers.length > 0 && (
           <Reveal className="mb-10">
             <div className="rounded-2xl border border-copper/20 bg-oat p-6">
@@ -191,6 +198,8 @@ export function OrderAhead() {
             />
           </aside>
         </div>
+        </>
+        )}
       </div>
     </>
   );

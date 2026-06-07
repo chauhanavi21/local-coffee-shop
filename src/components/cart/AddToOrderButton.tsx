@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Check, Plus } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
-import type { MenuItem } from "../../data/menu";
+import type { MenuItem } from "../../types/menu";
 
 export function AddToOrderButton({ item }: { item: MenuItem }) {
   const { user } = useAuth();

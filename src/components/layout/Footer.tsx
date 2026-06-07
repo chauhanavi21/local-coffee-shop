@@ -35,7 +35,6 @@ export function Footer() {
               Professor <span className="text-copper">Java&apos;s</span>
             </Link>
             <p className="mt-1 text-sm text-amber/80">Coffee Sanctuary</p>
-            <p className="mt-2 font-mono text-[10px] text-crema/40">{cafe.database}</p>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-crema/70">
               {cafe.description}
             </p>

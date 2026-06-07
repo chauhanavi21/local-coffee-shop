@@ -98,9 +98,27 @@ export const api = {
 
   getOffers: () => request<{ offers: OfferDTO[] }>("/offers"),
 
-  health: () =>
-    request<{ ok: boolean; db: number; cluster: string }>("/health"),
+  getMenu: () =>
+    request<{
+      categories: { id: string; label: string }[];
+      items: MenuItemDTO[];
+      retailBeans: { name: string; price: number; note: string }[];
+      featured: MenuItemDTO[];
+    }>("/menu"),
+
+  health: () => request<{ ok: boolean; db: boolean }>("/health"),
 };
+
+export interface MenuItemDTO {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+  tag?: string;
+  featured?: boolean;
+}
 
 export interface UserDTO {
   id: string;

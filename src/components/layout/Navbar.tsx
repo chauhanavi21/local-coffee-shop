@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { LogOut, Menu, ShoppingBag, User, X } from "lucide-react";
 import { ButtonLink } from "../ui/Button";
-import { DbConnectionBar } from "./DbConnectionBar";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 
@@ -51,10 +50,8 @@ export function Navbar() {
 
   return (
     <>
-      <div className="fixed inset-x-0 top-0 z-50">
-      <DbConnectionBar variant="header" />
       <header
-        className={`transition-[background,padding,box-shadow] duration-300 ${
+        className={`fixed inset-x-0 top-0 z-50 transition-[background,padding,box-shadow] duration-300 ${
           scrolled || !isHome || mobileOpen
             ? "border-b border-espresso/5 bg-parchment/95 py-3 shadow-sm"
             : "bg-transparent py-5 md:py-6"
@@ -164,7 +161,6 @@ export function Navbar() {
           </button>
         </div>
       </header>
-      </div>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-espresso/95 md:hidden">

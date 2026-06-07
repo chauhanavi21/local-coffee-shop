@@ -2,22 +2,35 @@ import { useState, type ReactNode } from "react";
 import { SectionHeading } from "../components/ui/SectionHeading";
 import { SmartImage } from "../components/ui/SmartImage";
 import { Reveal, StaggerContainer, StaggerItem } from "../components/ui/Reveal";
-import {
-  menuItems,
-  menuCategories,
-  retailBeans,
-  type MenuCategory,
-} from "../data/menu";
+import { useMenu } from "../context/MenuContext";
+import type { MenuCategory } from "../types/menu";
 import { cafe } from "../data/cafe";
 import { AddToOrderButton } from "../components/cart/AddToOrderButton";
 
 export function Menu() {
+  const { items, categories, retailBeans, loading, error } = useMenu();
   const [active, setActive] = useState<MenuCategory | "all">("all");
 
   const filtered =
     active === "all"
-      ? menuItems
-      : menuItems.filter((item) => item.category === active);
+      ? items
+      : items.filter((item) => item.category === active);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-oat border-t-copper" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-shell py-32 text-center">
+        <p className="text-mocha">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -46,7 +59,7 @@ export function Menu() {
           >
             All
           </FilterButton>
-          {menuCategories.map((cat) => (
+          {categories.map((cat) => (
             <FilterButton
               key={cat.id}
               active={active === cat.id}

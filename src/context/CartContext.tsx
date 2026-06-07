@@ -7,9 +7,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { menuItems, type MenuItem } from "../data/menu";
 import { api, type CartDTO, type CartItemDTO } from "../lib/api";
+import type { MenuItem } from "../types/menu";
 import { useAuth } from "./AuthContext";
+import { useMenu } from "./MenuContext";
 import { computeDiscount } from "../lib/pricing";
 
 export type MilkOption = "whole" | "oat" | "almond" | "none";
@@ -59,19 +60,23 @@ export function lineLabel(line: CartLine): string {
   return line.item.name;
 }
 
-function hydrateItems(dto: CartItemDTO[]): CartLine[] {
-  return dto
-    .map((row) => {
-      const item = menuItems.find((m) => m.id === row.menuItemId);
-      if (!item) return null;
-      return { ...row, item };
-    })
-    .filter(Boolean) as CartLine[];
-}
-
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user, offers, refreshUser } = useAuth();
+  const { getItemById } = useMenu();
+
+  const hydrateItems = useCallback(
+    (dto: CartItemDTO[]): CartLine[] =>
+      dto
+        .map((row) => {
+          const item = getItemById(row.menuItemId);
+          if (!item) return null;
+          return { ...row, item };
+        })
+        .filter(Boolean) as CartLine[],
+    [getItemById],
+  );
   const [items, setItems] = useState<CartLine[]>([]);
+  const [rawCart, setRawCart] = useState<CartDTO | null>(null);
   const [checkout, setCheckoutState] = useState<CartDTO["checkout"]>({
     pickupTime: "In 30 min",
     orderNotes: "",
@@ -79,9 +84,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
 
   const applyCart = (cart: CartDTO) => {
+    setRawCart(cart);
     setItems(hydrateItems(cart.items));
     setCheckoutState(cart.checkout);
   };
+
+  useEffect(() => {
+    if (rawCart) {
+      setItems(hydrateItems(rawCart.items));
+    }
+  }, [rawCart, hydrateItems]);
 
   const refreshCart = useCallback(async () => {
     if (!user) {
@@ -95,7 +107,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, hydrateItems]);
 
   useEffect(() => {
     if (user) {
