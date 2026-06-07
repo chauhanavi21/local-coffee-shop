@@ -29,6 +29,7 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
     appliedOffers: { type: [String], default: [] },
+    promoCode: { type: String, default: "" },
     pickupTime: { type: String, default: "" },
     orderNotes: { type: String, default: "" },
     status: { type: String, enum: ["paid"], default: "paid" },

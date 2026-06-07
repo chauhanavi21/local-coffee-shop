@@ -1,6 +1,7 @@
 import type { OfferDTO } from "./api";
 import type { CartLine } from "../context/CartContext";
 import { linePrice } from "../context/CartContext";
+import { promoDiscountAmount } from "./promo";
 
 export function isOfferEligible(
   offer: OfferDTO,
@@ -18,6 +19,7 @@ export function computeDiscount(
   offers: OfferDTO[],
   orderCount: number,
   selectedOfferIds: string[] = [],
+  promoCode = "",
 ): number {
   let discount = 0;
   const subtotal = items.reduce((s, l) => s + linePrice(l), 0);
@@ -47,5 +49,6 @@ export function computeDiscount(
     }
   }
 
+  discount += promoDiscountAmount(subtotal, promoCode);
   return Math.min(discount, subtotal);
 }

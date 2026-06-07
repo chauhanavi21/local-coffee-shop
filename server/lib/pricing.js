@@ -1,4 +1,5 @@
 import { MEMBER_OFFERS } from "../data/offers.js";
+import { findPromoCode } from "../data/promoCodes.js";
 
 const TAX_RATE = 0.08875;
 
@@ -16,7 +17,21 @@ export function computeSubtotal(cartItems, menuById) {
   }, 0);
 }
 
-export function computeDiscount(cartItems, menuById, orderCount, selectedOfferIds = []) {
+function promoDiscount(subtotal, promoCode) {
+  const promo = findPromoCode(promoCode);
+  if (!promo) return 0;
+  if (promo.discountPercent) return subtotal * (promo.discountPercent / 100);
+  if (promo.discountFlat) return promo.discountFlat;
+  return 0;
+}
+
+export function computeDiscount(
+  cartItems,
+  menuById,
+  orderCount,
+  selectedOfferIds = [],
+  promoCode = "",
+) {
   const offers = MEMBER_OFFERS.filter((o) => selectedOfferIds.includes(o.id));
   let discount = 0;
   const subtotal = computeSubtotal(cartItems, menuById);
@@ -51,12 +66,25 @@ export function computeDiscount(cartItems, menuById, orderCount, selectedOfferId
     }
   }
 
+  discount += promoDiscount(subtotal, promoCode);
   return Math.min(discount, subtotal);
 }
 
-export function computeTotals(cartItems, menuById, orderCount, selectedOfferIds) {
+export function computeTotals(
+  cartItems,
+  menuById,
+  orderCount,
+  selectedOfferIds,
+  promoCode = "",
+) {
   const subtotal = computeSubtotal(cartItems, menuById);
-  const discount = computeDiscount(cartItems, menuById, orderCount, selectedOfferIds);
+  const discount = computeDiscount(
+    cartItems,
+    menuById,
+    orderCount,
+    selectedOfferIds,
+    promoCode,
+  );
   const taxable = Math.max(0, subtotal - discount);
   const tax = taxable * TAX_RATE;
   const total = taxable + tax;

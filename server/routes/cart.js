@@ -4,6 +4,7 @@ import { Order } from "../models/Order.js";
 import { authRequired } from "../middleware/auth.js";
 import { MenuItem } from "../models/MenuItem.js";
 import { computeTotals, lineUnitPrice } from "../lib/pricing.js";
+import { findPromoCode } from "../data/promoCodes.js";
 
 const router = Router();
 
@@ -119,9 +120,21 @@ router.patch("/checkout", authRequired, async (req, res) => {
   }
 });
 
+router.post("/promo/validate", authRequired, async (req, res) => {
+  try {
+    const promo = findPromoCode(req.body.code);
+    if (!promo) {
+      return res.status(404).json({ error: "Invalid promo code" });
+    }
+    res.json({ promo });
+  } catch (err) {
+    res.status(500).json({ error: "Could not validate promo code" });
+  }
+});
+
 router.post("/complete", authRequired, async (req, res) => {
   try {
-    const { paymentMethod, appliedOffers = [] } = req.body;
+    const { paymentMethod, appliedOffers = [], promoCode = "" } = req.body;
 
     if (!["card", "cash", "apple_pay"].includes(paymentMethod)) {
       return res.status(400).json({ error: "Invalid payment method" });
@@ -149,11 +162,17 @@ router.post("/complete", authRequired, async (req, res) => {
       }
     }
 
+    const normalizedPromo = promoCode?.trim().toUpperCase() || "";
+    if (normalizedPromo && !findPromoCode(normalizedPromo)) {
+      return res.status(400).json({ error: "Invalid promo code" });
+    }
+
     const { subtotal, discount, tax, total } = computeTotals(
       user.cart.items,
       menuById,
       user.orderCount,
       offerIds,
+      normalizedPromo,
     );
 
     const orderLines = user.cart.items.map((row) => {
@@ -183,6 +202,7 @@ router.post("/complete", authRequired, async (req, res) => {
       total,
       paymentMethod,
       appliedOffers: offerIds,
+      promoCode: normalizedPromo,
       pickupTime: user.cart.checkout.pickupTime,
       orderNotes: user.cart.checkout.orderNotes,
       status: "paid",
@@ -206,6 +226,7 @@ router.post("/complete", authRequired, async (req, res) => {
         total: order.total,
         paymentMethod: order.paymentMethod,
         appliedOffers: order.appliedOffers,
+        promoCode: order.promoCode,
         pickupTime: order.pickupTime,
         createdAt: order.createdAt,
       },
