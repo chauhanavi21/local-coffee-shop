@@ -5,6 +5,7 @@ import { Reveal } from "../components/ui/Reveal";
 import { Button } from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
+import { validateSignupForm } from "../lib/authValidation";
 
 export function Signup() {
   const { signup, user } = useAuth();
@@ -22,6 +23,18 @@ export function Signup() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const validationError = validateSignupForm({
+      firstName,
+      lastName,
+      email,
+      phone,
+      password,
+    });
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setError("");
     setSubmitting(true);
     try {

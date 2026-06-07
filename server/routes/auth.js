@@ -4,6 +4,11 @@ import { User } from "../models/User.js";
 import { Order } from "../models/Order.js";
 import { authRequired, signToken } from "../middleware/auth.js";
 import { MEMBER_OFFERS } from "../data/offers.js";
+import {
+  validateDeleteAccountBody,
+  validateLoginBody,
+  validateSignupBody,
+} from "../lib/authValidation.js";
 
 const router = Router();
 
@@ -33,29 +38,24 @@ router.get("/me", authRequired, async (req, res) => {
 
 router.post("/signup", async (req, res) => {
   try {
-    const { firstName, lastName, email, password, phone } = req.body;
-
-    if (!firstName?.trim() || !lastName?.trim() || !email?.trim() || !password) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-    if (!phone?.trim()) {
-      return res.status(400).json({ error: "Phone number is required" });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    const parsed = validateSignupBody(req.body);
+    if (!parsed.ok) {
+      return res.status(400).json({ error: parsed.error });
     }
 
-    const exists = await User.findOne({ email: email.toLowerCase().trim() });
+    const { firstName, lastName, email, password, phone } = parsed.data;
+
+    const exists = await User.findOne({ email });
     if (exists) {
       return res.status(409).json({ error: "An account with this email already exists" });
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await User.create({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      email: email.toLowerCase().trim(),
-      phone: phone.trim(),
+      firstName,
+      lastName,
+      email,
+      phone,
       passwordHash,
       activeOffers: MEMBER_OFFERS.map((o) => o.id),
     });
@@ -74,12 +74,14 @@ router.post("/signup", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email?.trim() || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+    const parsed = validateLoginBody(req.body);
+    if (!parsed.ok) {
+      return res.status(400).json({ error: parsed.error });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const { email, password } = parsed.data;
+
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
@@ -103,6 +105,11 @@ router.post("/login", async (req, res) => {
 
 router.delete("/me", authRequired, async (req, res) => {
   try {
+    const parsed = validateDeleteAccountBody(req.body);
+    if (!parsed.ok) {
+      return res.status(400).json({ error: parsed.error });
+    }
+
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 

@@ -61,9 +61,10 @@ export const api = {
       "/auth/me",
     ),
 
-  deleteAccount: () =>
+  deleteAccount: (confirm = "DELETE") =>
     request<{ ok: boolean }>("/auth/me", {
       method: "DELETE",
+      body: JSON.stringify({ confirm }),
     }),
 
   getCart: () => request<{ cart: CartDTO }>("/cart"),

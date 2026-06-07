@@ -4,6 +4,7 @@ import { Reveal } from "../components/ui/Reveal";
 import { Button } from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../lib/api";
+import { validateLoginForm } from "../lib/authValidation";
 
 export function Login() {
   const { login, user } = useAuth();
@@ -20,6 +21,12 @@ export function Login() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const validationError = validateLoginForm({ email, password });
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setError("");
     setSubmitting(true);
     try {
