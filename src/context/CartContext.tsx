@@ -47,6 +47,7 @@ interface CartContextValue {
   completeOrder: (body: {
     paymentMethod: "card" | "cash" | "apple_pay";
     appliedOffers?: string[];
+    promoCode?: string;
   }) => Promise<import("../lib/api").OrderDTO>;
 }
 
@@ -158,10 +159,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const completeOrder = async (body: {
     paymentMethod: "card" | "cash" | "apple_pay";
     appliedOffers?: string[];
+    promoCode?: string;
   }) => {
     const data = await api.completeOrder(body);
+    applyCart(data.cart);
     await refreshUser();
-    await refreshCart();
     return data.order;
   };
 

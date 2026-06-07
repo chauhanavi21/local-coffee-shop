@@ -61,6 +61,11 @@ export const api = {
       "/auth/me",
     ),
 
+  deleteAccount: () =>
+    request<{ ok: boolean }>("/auth/me", {
+      method: "DELETE",
+    }),
+
   getCart: () => request<{ cart: CartDTO }>("/cart"),
 
   addCartItem: (body: {
@@ -92,9 +97,16 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
+  validatePromo: (code: string) =>
+    request<{ promo: { code: string; label: string; discountPercent?: number; discountFlat?: number } }>(
+      "/cart/promo/validate",
+      { method: "POST", body: JSON.stringify({ code }) },
+    ),
+
   completeOrder: (body: {
     paymentMethod: "card" | "cash" | "apple_pay";
     appliedOffers?: string[];
+    promoCode?: string;
   }) =>
     request<{ order: OrderDTO; user: UserDTO; cart: CartDTO }>("/cart/complete", {
       method: "POST",
@@ -160,6 +172,7 @@ export interface OrderDTO {
   total: number;
   paymentMethod: "card" | "cash" | "apple_pay";
   appliedOffers: string[];
+  promoCode?: string;
   pickupTime: string;
   orderNotes?: string;
   status: string;

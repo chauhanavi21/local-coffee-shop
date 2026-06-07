@@ -4,6 +4,7 @@ import { ButtonLink } from "../components/ui/Button";
 import { Reveal, StaggerContainer, StaggerItem } from "../components/ui/Reveal";
 import { SectionHeading } from "../components/ui/SectionHeading";
 import { SmartImage } from "../components/ui/SmartImage";
+import { OrderSuccessBanner } from "../components/order/OrderSuccessBanner";
 import { useMenu } from "../context/MenuContext";
 import { cafe } from "../data/cafe";
 
@@ -47,6 +48,7 @@ export function Home() {
 
   return (
     <>
+      <OrderSuccessBanner />
       <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-espresso">
         <div className="absolute inset-0">
           <SmartImage

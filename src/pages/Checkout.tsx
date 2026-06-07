@@ -9,6 +9,8 @@ import {
   MapPin,
   Shield,
   Smartphone,
+  Tag,
+  X,
 } from "lucide-react";
 import { Reveal } from "../components/ui/Reveal";
 import { Button } from "../components/ui/Button";
@@ -19,19 +21,21 @@ import {
 } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { locations } from "../data/locations";
-import { cafe } from "../data/cafe";
 import { computeDiscount, isOfferEligible } from "../lib/pricing";
-import type { OrderDTO } from "../lib/api";
+import { api } from "../lib/api";
+import {
+  clearAppliedPromo,
+  findPromoCode,
+  promoDiscountAmount,
+  readAppliedPromo,
+  saveAppliedPromo,
+} from "../lib/promo";
+import { buildOrderSuccessPayload } from "../components/order/OrderSuccessBanner";
+import { saveOrderSuccess } from "../lib/pickup";
 
 const TAX_RATE = 0.08875;
 
 type PaymentMethod = "card" | "cash" | "apple_pay";
-
-const paymentLabels: Record<PaymentMethod, string> = {
-  card: "Card",
-  cash: "Cash",
-  apple_pay: "Apple Pay",
-};
 
 export function Checkout() {
   const { user, offers } = useAuth();
@@ -41,20 +45,25 @@ export function Checkout() {
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [selectedOffers, setSelectedOffers] = useState<string[]>([]);
+  const [promoInput, setPromoInput] = useState(() => readAppliedPromo()?.code ?? "");
+  const [appliedPromo, setAppliedPromo] = useState(() => readAppliedPromo()?.code ?? "");
+  const [promoLabel, setPromoLabel] = useState(() => readAppliedPromo()?.label ?? "");
+  const [promoError, setPromoError] = useState("");
+  const [promoChecking, setPromoChecking] = useState(false);
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
   const [processing, setProcessing] = useState(false);
-  const [paid, setPaid] = useState(false);
-  const [savedOrder, setSavedOrder] = useState<OrderDTO | null>(null);
+  const [completing, setCompleting] = useState(false);
+  const [payError, setPayError] = useState("");
 
   const eligibleOffers = useMemo(
     () => offers.filter((o) => isOfferEligible(o, user?.orderCount ?? 0)),
     [offers, user?.orderCount],
   );
 
-  const discount = useMemo(
+  const offerDiscount = useMemo(
     () =>
       user
         ? computeDiscount(cart.items, offers, user.orderCount, selectedOffers)
@@ -62,11 +71,25 @@ export function Checkout() {
     [cart.items, offers, user, selectedOffers],
   );
 
+  const promoDiscount = useMemo(
+    () => (appliedPromo ? promoDiscountAmount(cart.subtotal, appliedPromo) : 0),
+    [cart.subtotal, appliedPromo],
+  );
+
+  const discount = Math.min(offerDiscount + promoDiscount, cart.subtotal);
   const taxable = Math.max(0, cart.subtotal - discount);
   const tax = taxable * TAX_RATE;
   const total = taxable + tax;
 
-  if (cart.items.length === 0 && !paid) {
+  if (cart.loading && cart.items.length === 0) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-oat border-t-copper" />
+      </div>
+    );
+  }
+
+  if (cart.items.length === 0 && !completing) {
     return <Navigate to="/order" replace />;
   }
 
@@ -87,18 +110,55 @@ export function Checkout() {
     );
   };
 
+  const handleApplyPromo = async () => {
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoError("");
+    setPromoChecking(true);
+    try {
+      const { promo } = await api.validatePromo(code);
+      setAppliedPromo(promo.code);
+      setPromoLabel(promo.label);
+      setPromoInput(promo.code);
+      saveAppliedPromo({ code: promo.code, label: promo.label });
+    } catch {
+      const localPromo = findPromoCode(code);
+      if (localPromo) {
+        setAppliedPromo(localPromo.code);
+        setPromoLabel(localPromo.label);
+        setPromoInput(localPromo.code);
+        saveAppliedPromo({ code: localPromo.code, label: localPromo.label });
+      } else {
+        setPromoError("Invalid code. Try JAVA10, WOLFROAD, or SANCTUARY.");
+        setAppliedPromo("");
+        setPromoLabel("");
+      }
+    } finally {
+      setPromoChecking(false);
+    }
+  };
+
+  const clearPromo = () => {
+    setAppliedPromo("");
+    setPromoLabel("");
+    setPromoInput("");
+    setPromoError("");
+    clearAppliedPromo();
+  };
+
   const cardValid =
     cardName.trim() &&
     cardNumber.replace(/\s/g, "").length >= 16 &&
     expiry.length >= 5 &&
     cvc.length >= 3;
 
-  const canPay =
-    paymentMethod === "card" ? cardValid : true;
+  const canPay = paymentMethod === "card" ? cardValid : true;
 
   const handlePay = async (e: FormEvent) => {
     e.preventDefault();
-    if (!canPay) return;
+    if (!canPay || completing) return;
+    setPayError("");
+    setCompleting(true);
     setProcessing(true);
     try {
       if (paymentMethod === "card") {
@@ -107,79 +167,28 @@ export function Checkout() {
       const order = await cart.completeOrder({
         paymentMethod,
         appliedOffers: selectedOffers,
+        promoCode: appliedPromo || undefined,
       });
-      setSavedOrder(order);
-      setPaid(true);
+      const payload = buildOrderSuccessPayload(order);
+      saveOrderSuccess(payload);
+      clearAppliedPromo();
+      navigate("/", { replace: true, state: { orderSuccess: payload } });
+    } catch (err) {
+      setCompleting(false);
+      setPayError(
+        err instanceof Error ? err.message : "Payment failed. Please try again.",
+      );
     } finally {
       setProcessing(false);
     }
   };
 
-  if (paid && savedOrder && user) {
+  if (completing) {
     return (
-      <section className="flex min-h-[80vh] items-center justify-center px-5 py-32">
-        <Reveal className="max-w-md text-center">
-          <div className="relative mx-auto h-24 w-24">
-            <span
-              className="animate-celebrate absolute inset-0 flex items-center justify-center text-6xl"
-              role="img"
-              aria-label="Celebration"
-            >
-              🎉
-            </span>
-            {["🎊", "✨", "🥳"].map((emoji, i) => (
-              <span
-                key={emoji}
-                className="confetti-piece absolute text-2xl"
-                style={{
-                  left: `${20 + i * 28}%`,
-                  top: "10%",
-                  animationDelay: `${i * 0.15}s`,
-                }}
-              >
-                {emoji}
-              </span>
-            ))}
-          </div>
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-copper">
-            Payment successful
-          </p>
-          <h1 className="mt-3 font-display text-4xl text-espresso">
-            Order confirmed!
-          </h1>
-          <p className="mt-2 font-mono text-sm text-mocha/60">
-            Order #{savedOrder.orderId}
-          </p>
-          <p className="mt-4 text-mocha/70">
-            Thanks, {user.firstName}! Paid with{" "}
-            <strong className="text-espresso">
-              {paymentLabels[savedOrder.paymentMethod]}
-            </strong>
-            . Pickup at <strong className="text-espresso">{location.name}</strong>{" "}
-            {savedOrder.pickupTime.toLowerCase()}.
-          </p>
-          <p className="mt-2 text-sm text-mocha/60">{cafe.address.full}</p>
-          {savedOrder.discount > 0 && (
-            <p className="mt-3 text-sm text-sage">
-              You saved ${savedOrder.discount.toFixed(2)} with member offers
-            </p>
-          )}
-          <p className="mt-4 text-sm font-medium text-espresso">
-            Total paid: ${savedOrder.total.toFixed(2)}
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Button onClick={() => navigate("/profile")}>View in profile</Button>
-            <Button variant="secondary" onClick={() => navigate("/order")}>
-              Order again
-            </Button>
-          </div>
-          <p className="mt-8 text-[11px] text-mocha/40">
-            {savedOrder.paymentMethod === "card"
-              ? "Demo card payment — no real charge"
-              : "Order saved to your account"}
-          </p>
-        </Reveal>
-      </section>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-5">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-oat border-t-copper" />
+        <p className="text-sm text-mocha/70">Confirming your order...</p>
+      </div>
     );
   }
 
@@ -203,7 +212,8 @@ export function Checkout() {
               Payment
             </h1>
             <p className="mt-3 text-crema/70">
-              Hi {user?.firstName} — choose a payment method and attach any offers.
+              Hi {user?.firstName} — choose a payment method, apply a promo code,
+              and attach any offers.
             </p>
           </Reveal>
         </div>
@@ -224,6 +234,12 @@ export function Checkout() {
                     <p className="text-mocha/60">{cart.checkout.pickupTime}</p>
                   </div>
                 </div>
+                {cart.checkout.orderNotes && (
+                  <div className="mt-4 rounded-xl bg-parchment p-3 text-xs text-mocha/70">
+                    <span className="font-medium text-espresso">Notes:</span>{" "}
+                    {cart.checkout.orderNotes}
+                  </div>
+                )}
                 <ul className="mt-5 space-y-3 border-t border-espresso/10 pt-5">
                   {cart.items.map((line) => (
                     <li
@@ -244,10 +260,16 @@ export function Checkout() {
                     <span>Subtotal</span>
                     <span>${cart.subtotal.toFixed(2)}</span>
                   </div>
-                  {discount > 0 && (
+                  {offerDiscount > 0 && (
                     <div className="flex justify-between text-sage">
                       <span>Offer savings</span>
-                      <span>-${discount.toFixed(2)}</span>
+                      <span>-${offerDiscount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {promoDiscount > 0 && (
+                    <div className="flex justify-between text-sage">
+                      <span>Promo ({appliedPromo})</span>
+                      <span>-${promoDiscount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-mocha/70">
@@ -259,6 +281,59 @@ export function Checkout() {
                     <span>${total.toFixed(2)}</span>
                   </div>
                 </div>
+              </div>
+            </Reveal>
+
+            <Reveal delay={40}>
+              <div className="rounded-2xl border border-espresso/10 bg-oat p-6">
+                <div className="flex items-center gap-2">
+                  <Tag size={18} className="text-copper" />
+                  <h2 className="font-display text-lg text-espresso">Promo code</h2>
+                </div>
+                {appliedPromo ? (
+                  <div className="mt-4 flex items-center justify-between rounded-xl bg-parchment px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium text-espresso">
+                        {appliedPromo}
+                      </p>
+                      <p className="text-xs text-mocha/60">{promoLabel}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearPromo}
+                      aria-label="Remove promo code"
+                      className="rounded-full p-1.5 text-mocha/50 hover:bg-oat hover:text-espresso"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-4 flex gap-2">
+                    <input
+                      value={promoInput}
+                      onChange={(e) => {
+                        setPromoInput(e.target.value.toUpperCase());
+                        setPromoError("");
+                      }}
+                      placeholder="e.g. JAVA10"
+                      className="min-w-0 flex-1 rounded-xl border border-espresso/10 bg-parchment px-4 py-2.5 text-sm uppercase outline-none focus:border-copper"
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={!promoInput.trim() || promoChecking}
+                      onClick={handleApplyPromo}
+                    >
+                      {promoChecking ? "..." : "Apply"}
+                    </Button>
+                  </div>
+                )}
+                {promoError && (
+                  <p className="mt-2 text-xs text-red-600/80">{promoError}</p>
+                )}
+                <p className="mt-3 text-xs text-mocha/50">
+                  Try JAVA10, WOLFROAD, or SANCTUARY
+                </p>
               </div>
             </Reveal>
 
@@ -409,6 +484,12 @@ export function Checkout() {
                   </p>
                 </div>
 
+                {payError && (
+                  <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {payError}
+                  </p>
+                )}
+
                 <Button
                   type="submit"
                   className="mt-6 w-full"
@@ -417,7 +498,7 @@ export function Checkout() {
                   {processing
                     ? "Processing..."
                     : paymentMethod === "apple_pay"
-                      ? ` Pay with Apple Pay · $${total.toFixed(2)}`
+                      ? `Pay with Apple Pay · $${total.toFixed(2)}`
                       : paymentMethod === "cash"
                         ? `Confirm order · $${total.toFixed(2)}`
                         : `Pay $${total.toFixed(2)}`}
