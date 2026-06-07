@@ -2,7 +2,7 @@ export const MEMBER_OFFERS = [
   {
     id: "welcome-10",
     title: "10% off your first order",
-    description: "New member welcome — automatically applied at checkout.",
+    description: "New member welcome — select it at checkout before you pay.",
     discountPercent: 10,
     firstOrderOnly: true,
   },
