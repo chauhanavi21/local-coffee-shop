@@ -39,7 +39,7 @@
   }
 
   .page-shell {
-    @apply mx-auto w-full max-w-[min(100%,96vw)] px-3 sm:px-4 lg:px-5;
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-6 md:px-8;
   }
 }
 
@@ -99,6 +99,26 @@
 
 .scroll-indicator {
   animation: scroll-bounce 1.8s ease-in-out infinite;
+}
+
+@keyframes celebrate-pop {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.15) rotate(-8deg); }
+  50% { transform: scale(1.25) rotate(8deg); }
+  75% { transform: scale(1.1) rotate(-4deg); }
+}
+
+.animate-celebrate {
+  animation: celebrate-pop 0.7s ease-in-out 4;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(30px) rotate(180deg); opacity: 0; }
+}
+
+.confetti-piece {
+  animation: confetti-fall 1.2s ease-out forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

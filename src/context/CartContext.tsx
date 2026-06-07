@@ -44,7 +44,10 @@ interface CartContextValue {
   updateQuantity: (key: string, quantity: number) => Promise<void>;
   removeItem: (key: string) => Promise<void>;
   setCheckout: (patch: Partial<CartDTO["checkout"]>) => Promise<void>;
-  completeOrder: () => Promise<void>;
+  completeOrder: (body: {
+    paymentMethod: "card" | "cash" | "apple_pay";
+    appliedOffers?: string[];
+  }) => Promise<import("../lib/api").OrderDTO>;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -152,10 +155,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     applyCart(data.cart);
   };
 
-  const completeOrder = async () => {
-    await api.completeOrder();
+  const completeOrder = async (body: {
+    paymentMethod: "card" | "cash" | "apple_pay";
+    appliedOffers?: string[];
+  }) => {
+    const data = await api.completeOrder(body);
     await refreshUser();
     await refreshCart();
+    return data.order;
   };
 
   const subtotal = useMemo(
@@ -165,9 +172,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const discount = useMemo(
     () =>
-      user
-        ? computeDiscount(items, offers, user.orderCount)
-        : 0,
+      user ? computeDiscount(items, offers, user.orderCount, []) : 0,
     [items, offers, user],
   );
 

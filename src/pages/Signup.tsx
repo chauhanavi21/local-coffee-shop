@@ -13,6 +13,7 @@ export function Signup() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -24,7 +25,7 @@ export function Signup() {
     setError("");
     setSubmitting(true);
     try {
-      await signup(firstName, lastName, email, password);
+      await signup(firstName, lastName, email, password, phone);
       navigate("/order", { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Signup failed");
@@ -63,6 +64,7 @@ export function Signup() {
             <Field label="Last name" id="lastName" value={lastName} onChange={setLastName} required />
           </div>
           <Field label="Email" id="email" type="email" value={email} onChange={setEmail} required />
+          <Field label="Phone" id="phone" type="tel" value={phone} onChange={setPhone} required placeholder="(518) 555-0100" />
           <Field label="Password" id="password" type="password" value={password} onChange={setPassword} required />
           <p className="text-xs text-mocha/50">Minimum 6 characters</p>
           <Button type="submit" className="w-full" disabled={submitting}>
@@ -88,6 +90,7 @@ function Field({
   value,
   onChange,
   required,
+  placeholder,
 }: {
   label: string;
   id: string;
@@ -95,6 +98,7 @@ function Field({
   value: string;
   onChange: (v: string) => void;
   required?: boolean;
+  placeholder?: string;
 }) {
   return (
     <div>
@@ -107,6 +111,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
+        placeholder={placeholder}
         className="w-full rounded-xl border border-espresso/10 bg-oat px-4 py-3 text-sm outline-none focus:border-copper focus:ring-2 focus:ring-copper/20"
       />
     </div>

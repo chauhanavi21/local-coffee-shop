@@ -100,14 +100,17 @@ export function Navbar() {
                     </span>
                   )}
                 </Link>
-                <span
-                  className={`inline-flex items-center gap-1.5 text-sm ${
-                    lightNav ? "text-crema/80" : "text-mocha/70"
+                <Link
+                  to="/profile"
+                  className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                    lightNav
+                      ? "text-crema/90 hover:text-parchment"
+                      : "text-mocha hover:text-espresso"
                   }`}
                 >
                   <User size={14} />
                   {user.firstName}
-                </span>
+                </Link>
                 <button
                   type="button"
                   onClick={logout}
@@ -181,6 +184,12 @@ export function Navbar() {
                   className="font-display text-3xl text-parchment transition-colors hover:text-amber"
                 >
                   Your order {itemCount > 0 && `(${itemCount})`}
+                </Link>
+                <Link
+                  to="/profile"
+                  className="font-display text-3xl text-parchment transition-colors hover:text-amber"
+                >
+                  My profile
                 </Link>
                 <p className="text-sm text-crema/70">Signed in as {user.firstName}</p>
                 <button

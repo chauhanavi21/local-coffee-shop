@@ -43,6 +43,7 @@ export const api = {
     lastName: string;
     email: string;
     password: string;
+    phone: string;
   }) =>
     request<{ token: string; user: UserDTO; offers: OfferDTO[] }>(
       "/auth/signup",
@@ -91,10 +92,16 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  completeOrder: () =>
-    request<{ user: UserDTO; cart: CartDTO }>("/cart/complete", {
+  completeOrder: (body: {
+    paymentMethod: "card" | "cash" | "apple_pay";
+    appliedOffers?: string[];
+  }) =>
+    request<{ order: OrderDTO; user: UserDTO; cart: CartDTO }>("/cart/complete", {
       method: "POST",
+      body: JSON.stringify(body),
     }),
+
+  getOrders: () => request<{ orders: OrderDTO[] }>("/orders"),
 
   getOffers: () => request<{ offers: OfferDTO[] }>("/offers"),
 
@@ -125,10 +132,38 @@ export interface UserDTO {
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
   memberSince: string;
   rewardsPoints: number;
   orderCount: number;
   activeOffers: string[];
+}
+
+export interface OrderLineDTO {
+  menuItemId: string;
+  name: string;
+  quantity: number;
+  size: string;
+  milk: string;
+  notes?: string;
+  unitPrice: number;
+  lineTotal: number;
+}
+
+export interface OrderDTO {
+  id: string;
+  orderId: string;
+  items: OrderLineDTO[];
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  paymentMethod: "card" | "cash" | "apple_pay";
+  appliedOffers: string[];
+  pickupTime: string;
+  orderNotes?: string;
+  status: string;
+  createdAt: string;
 }
 
 export interface OfferDTO {

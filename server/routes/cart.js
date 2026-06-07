@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { User } from "../models/User.js";
+import { Order } from "../models/Order.js";
 import { authRequired } from "../middleware/auth.js";
 import { MenuItem } from "../models/MenuItem.js";
+import { computeTotals, lineUnitPrice } from "../lib/pricing.js";
 
 const router = Router();
 
@@ -119,8 +121,72 @@ router.patch("/checkout", authRequired, async (req, res) => {
 
 router.post("/complete", authRequired, async (req, res) => {
   try {
+    const { paymentMethod, appliedOffers = [] } = req.body;
+
+    if (!["card", "cash", "apple_pay"].includes(paymentMethod)) {
+      return res.status(400).json({ error: "Invalid payment method" });
+    }
+
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (!user.cart.items.length) {
+      return res.status(400).json({ error: "Cart is empty" });
+    }
+
+    const offerIds = Array.isArray(appliedOffers)
+      ? appliedOffers.filter((id) => user.activeOffers.includes(id))
+      : [];
+
+    const menuItems = await MenuItem.find({
+      slug: { $in: user.cart.items.map((i) => i.menuItemId) },
+    });
+    const menuById = new Map(menuItems.map((m) => [m.slug, m]));
+
+    for (const row of user.cart.items) {
+      if (!menuById.has(row.menuItemId)) {
+        return res.status(400).json({ error: "Invalid item in cart" });
+      }
+    }
+
+    const { subtotal, discount, tax, total } = computeTotals(
+      user.cart.items,
+      menuById,
+      user.orderCount,
+      offerIds,
+    );
+
+    const orderLines = user.cart.items.map((row) => {
+      const menuItem = menuById.get(row.menuItemId);
+      const unitPrice = lineUnitPrice(menuItem, row.size);
+      return {
+        menuItemId: row.menuItemId,
+        name: menuItem.name,
+        quantity: row.quantity,
+        size: row.size,
+        milk: row.milk,
+        notes: row.notes || "",
+        unitPrice,
+        lineTotal: unitPrice * row.quantity,
+      };
+    });
+
+    const orderId = `PJ-${Date.now().toString().slice(-8)}`;
+
+    const order = await Order.create({
+      userId: user._id,
+      orderId,
+      items: orderLines,
+      subtotal,
+      discount,
+      tax,
+      total,
+      paymentMethod,
+      appliedOffers: offerIds,
+      pickupTime: user.cart.checkout.pickupTime,
+      orderNotes: user.cart.checkout.orderNotes,
+      status: "paid",
+    });
 
     user.orderCount += 1;
     user.rewardsPoints += 10;
@@ -128,11 +194,26 @@ router.post("/complete", authRequired, async (req, res) => {
     user.cart.checkout.orderNotes = "";
 
     await user.save();
+
     res.json({
+      order: {
+        id: order._id.toString(),
+        orderId: order.orderId,
+        items: order.items,
+        subtotal: order.subtotal,
+        discount: order.discount,
+        tax: order.tax,
+        total: order.total,
+        paymentMethod: order.paymentMethod,
+        appliedOffers: order.appliedOffers,
+        pickupTime: order.pickupTime,
+        createdAt: order.createdAt,
+      },
       user: user.toPublicJSON(),
       cart: serializeCart(user),
     });
   } catch (err) {
+    console.error("Complete order error:", err);
     res.status(500).json({ error: "Could not complete order" });
   }
 });

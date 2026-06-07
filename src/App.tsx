@@ -33,6 +33,9 @@ const Login = lazy(() =>
 const Signup = lazy(() =>
   import("./pages/Signup").then((m) => ({ default: m.Signup })),
 );
+const Profile = lazy(() =>
+  import("./pages/Profile").then((m) => ({ default: m.Profile })),
+);
 
 function PageLoader() {
   return (
@@ -68,6 +71,14 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <Checkout />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
                     </ProtectedRoute>
                   }
                 />

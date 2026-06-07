@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import authRouter from "./routes/auth.js";
 import cartRouter from "./routes/cart.js";
 import menuRouter from "./routes/menu.js";
+import ordersRouter from "./routes/orders.js";
 import { MEMBER_OFFERS } from "./data/offers.js";
 import { seedMenuIfEmpty } from "./lib/seedMenu.js";
 
@@ -28,6 +29,7 @@ app.get("/api/offers", (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/menu", menuRouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/orders", ordersRouter);
 
 async function start() {
   const uri = process.env.MONGODB_URI;

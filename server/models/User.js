@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    phone: { type: String, default: "", trim: true },
     passwordHash: { type: String, required: true },
     memberSince: { type: Date, default: Date.now },
     rewardsPoints: { type: Number, default: 0 },
@@ -56,6 +57,7 @@ userSchema.methods.toPublicJSON = function () {
     rewardsPoints: this.rewardsPoints,
     orderCount: this.orderCount,
     activeOffers: this.activeOffers,
+    phone: this.phone || undefined,
   };
 };
 

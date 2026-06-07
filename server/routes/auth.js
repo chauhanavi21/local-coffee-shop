@@ -32,10 +32,13 @@ router.get("/me", authRequired, async (req, res) => {
 
 router.post("/signup", async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, phone } = req.body;
 
     if (!firstName?.trim() || !lastName?.trim() || !email?.trim() || !password) {
       return res.status(400).json({ error: "All fields are required" });
+    }
+    if (!phone?.trim()) {
+      return res.status(400).json({ error: "Phone number is required" });
     }
     if (password.length < 6) {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
@@ -51,6 +54,7 @@ router.post("/signup", async (req, res) => {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.toLowerCase().trim(),
+      phone: phone.trim(),
       passwordHash,
       activeOffers: MEMBER_OFFERS.map((o) => o.id),
     });
