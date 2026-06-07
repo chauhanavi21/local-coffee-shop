@@ -26,6 +26,7 @@ interface AuthContextValue {
     phone: string,
   ) => Promise<void>;
   logout: () => void;
+  deleteAccount: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -84,9 +85,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOffers([]);
   };
 
+  const deleteAccount = async () => {
+    await api.deleteAccount();
+    setToken(null);
+    setUser(null);
+    setOffers([]);
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, offers, loading, login, signup, logout, refreshUser }}
+      value={{ user, offers, loading, login, signup, logout, deleteAccount, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

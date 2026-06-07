@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
+  AlertTriangle,
   Banknote,
   CreditCard,
   Gift,
@@ -8,9 +10,11 @@ import {
   ShoppingBag,
   Smartphone,
   Star,
+  Trash2,
 } from "lucide-react";
 import { Reveal } from "../components/ui/Reveal";
 import { ButtonLink } from "../components/ui/Button";
+import { PaymentCelebration } from "../components/order/PaymentCelebration";
 import { useAuth } from "../context/AuthContext";
 import { api, type OrderDTO } from "../lib/api";
 
@@ -27,19 +31,50 @@ const paymentLabels = {
 } as const;
 
 export function Profile() {
-  const { user, offers } = useAuth();
+  const { user, offers, deleteAccount } = useAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<OrderDTO[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    api
-      .getOrders()
-      .then((data) => setOrders(data.orders))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+  const loadOrders = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await api.getOrders();
+      setOrders(data.orders);
+    } catch (err) {
+        console.error(err);
+      setError("Could not load your order history. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
   if (!user) return null;
+
+  const canDelete = deleteConfirm.trim().toUpperCase() === "DELETE";
+
+  const handleDeleteAccount = async () => {
+    if (!canDelete || deleting) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteAccount();
+      navigate("/", { replace: true });
+    } catch (err) {
+      console.error(err);
+      setDeleteError("Could not delete your account. Please try again.");
+      setDeleting(false);
+    }
+  };
 
   return (
     <>
@@ -124,6 +159,42 @@ export function Profile() {
                 </div>
               </Reveal>
             )}
+
+            <Reveal delay={80}>
+              <div className="rounded-2xl border border-red-200 bg-red-50/70 p-6">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={18} className="text-red-700" />
+                  <h2 className="font-display text-lg text-red-950">
+                    Delete account
+                  </h2>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-red-900/70">
+                  This permanently deletes your profile, cart, and saved order
+                  history. Type DELETE to confirm.
+                </p>
+                <input
+                  value={deleteConfirm}
+                  onChange={(e) => {
+                    setDeleteConfirm(e.target.value);
+                    setDeleteError("");
+                  }}
+                  placeholder="Type DELETE"
+                  className="mt-4 w-full rounded-xl border border-red-200 bg-parchment px-4 py-2.5 text-sm outline-none transition-colors focus:border-red-400 focus:ring-2 focus:ring-red-200"
+                />
+                {deleteError && (
+                  <p className="mt-2 text-xs text-red-700">{deleteError}</p>
+                )}
+                <button
+                  type="button"
+                  disabled={!canDelete || deleting}
+                  onClick={handleDeleteAccount}
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-red-700 px-5 py-3 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Trash2 size={15} />
+                  {deleting ? "Deleting..." : "Delete my account"}
+                </button>
+              </div>
+            </Reveal>
           </div>
 
           <div className="lg:col-span-2">
@@ -139,56 +210,95 @@ export function Profile() {
                 <div className="mt-8 flex justify-center py-12">
                   <div className="h-8 w-8 animate-spin rounded-full border-2 border-oat border-t-copper" />
                 </div>
+              ) : error ? (
+                <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+                  <p className="text-sm text-red-700">{error}</p>
+                  <button
+                    type="button"
+                    onClick={loadOrders}
+                    className="mt-4 rounded-full bg-espresso px-5 py-2 text-xs font-semibold text-parchment transition-transform hover:-translate-y-0.5"
+                  >
+                    Retry order history
+                  </button>
+                </div>
               ) : orders.length === 0 ? (
                 <div className="mt-8 rounded-2xl border border-dashed border-espresso/15 bg-oat/50 p-10 text-center">
                   <p className="text-mocha/70">No orders yet.</p>
-                  <ButtonLink to="/menu" variant="secondary" className="mt-4">
-                    Browse the menu
+                  <ButtonLink to="/order" variant="secondary" className="mt-4">
+                    Start an order
                   </ButtonLink>
                 </div>
               ) : (
                 <ul className="mt-6 space-y-4">
-                  {orders.map((order) => {
-                    const PayIcon = paymentIcons[order.paymentMethod];
+                  {orders.map((order, index) => {
+                    const paymentMethod = order.paymentMethod ?? "card";
+                    const PayIcon = paymentIcons[paymentMethod] ?? CreditCard;
                     return (
                       <li
                         key={order.id}
-                        className="rounded-2xl border border-espresso/10 bg-oat p-5 md:p-6"
+                        className="relative overflow-hidden rounded-2xl border border-espresso/10 bg-oat p-5 shadow-[0_16px_50px_rgba(26,18,9,0.05)] transition-transform duration-300 hover:-translate-y-0.5 md:p-6"
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
-                            <p className="font-mono text-sm text-copper">
-                              #{order.orderId}
-                            </p>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-mono text-sm text-copper">
+                                #{order.orderId}
+                              </p>
+                              <span className="rounded-full bg-sage/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-sage">
+                                Paid
+                              </span>
+                              {index === 0 && (
+                                <span className="rounded-full bg-copper/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-copper">
+                                  Just completed
+                                </span>
+                              )}
+                            </div>
                             <p className="mt-1 text-xs text-mocha/60">
                               {new Date(order.createdAt).toLocaleString()}
                               {order.pickupTime && ` · ${order.pickupTime}`}
                             </p>
                           </div>
-                          <div className="text-right">
+                          <div className="flex items-start gap-2 text-right">
+                            {index === 0 && (
+                              <div className="pointer-events-none -mt-3 h-12 w-12 shrink-0 overflow-visible">
+                                <PaymentCelebration size="sm" />
+                              </div>
+                            )}
+                            <div>
                             <p className="font-medium text-espresso">
                               ${order.total.toFixed(2)}
                             </p>
                             <p className="mt-1 inline-flex items-center gap-1 text-xs text-mocha/60">
                               <PayIcon size={12} />
-                              {paymentLabels[order.paymentMethod]}
+                              {paymentLabels[paymentMethod] ?? "Card"}
                             </p>
+                            </div>
                           </div>
                         </div>
                         <ul className="mt-4 space-y-1 border-t border-espresso/10 pt-4 text-sm text-mocha">
                           {order.items.map((line, i) => (
                             <li key={`${line.menuItemId}-${i}`}>
-                              {line.quantity}× {line.name}
+                              <span>
+                                {line.quantity}× {line.name}
+                              </span>
                               <span className="text-mocha/50">
                                 {" "}
-                                — ${line.lineTotal.toFixed(2)}
+                                ({line.size}
+                                {line.milk && line.milk !== "none"
+                                  ? ` · ${line.milk}`
+                                  : ""}
+                                {line.notes ? ` · ${line.notes}` : ""}) — $
+                                {line.lineTotal.toFixed(2)}
                               </span>
                             </li>
                           ))}
                         </ul>
                         {order.discount > 0 && (
                           <p className="mt-2 text-xs text-sage">
-                            Saved ${order.discount.toFixed(2)} with offers
+                            Saved ${order.discount.toFixed(2)}
+                            {order.promoCode
+                              ? ` with promo ${order.promoCode}`
+                              : " with offers"}
                           </p>
                         )}
                       </li>
