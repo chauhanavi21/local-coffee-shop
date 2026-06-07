@@ -38,6 +38,7 @@ export function SmartImage({
 }: SmartImageProps) {
   const [currentSrc, setCurrentSrc] = useState(src);
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   return (
     <img
@@ -48,8 +49,10 @@ export function SmartImage({
       decoding="async"
       fetchPriority={priority ? "high" : "auto"}
       sizes={sizes}
+      onLoad={() => setLoaded(true)}
       onError={() => {
         if (failed) return;
+        setLoaded(false);
         const remote = imageFallbacks[src];
         if (remote && currentSrc !== remote) {
           setCurrentSrc(remote);
@@ -60,7 +63,9 @@ export function SmartImage({
           setCurrentSrc(PLACEHOLDER);
         }
       }}
-      className={`h-full w-full object-cover ${className}`}
+      className={`smart-image h-full w-full object-cover ${
+        loaded ? "smart-image-loaded" : ""
+      } ${className}`}
     />
   );
 }
