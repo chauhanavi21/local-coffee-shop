@@ -76,3 +76,74 @@ On first run the API seeds the menu into MongoDB if the collection is empty.
 - Vite + React + TypeScript + Tailwind CSS v4
 - Express + MongoDB + JWT (backend in `/server`)
 - React Router
+
+## Deploy (Vercel + Render)
+
+**Frontend → Vercel** · **API → Render** · **Database → MongoDB Atlas**
+
+### 1. MongoDB Atlas
+
+- Allow network access from anywhere (`0.0.0.0/0`) or Render’s IPs
+- Use a connection string with a database name, e.g. `...mongodb.net/noir-bean?...`
+
+### 2. Render (API)
+
+Create a **Web Service** from this repo:
+
+| Setting | Value |
+|---------|--------|
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+| Health Check | `/api/health` |
+
+**Environment variables (Render only):**
+
+```env
+MONGODB_URI=mongodb+srv://...
+JWT_SECRET=long-random-production-secret
+JWT_EXPIRES_IN=7d
+FRONTEND_URL=https://your-app.vercel.app
+```
+
+Optional for Vercel preview URLs:
+
+```env
+CORS_ORIGINS=https://your-app.vercel.app,https://your-app-git-main.vercel.app
+```
+
+Do **not** set `PORT` on Render — it is assigned automatically.
+
+After deploy, test: `https://your-api.onrender.com/api/health`
+
+### 3. Vercel (frontend)
+
+Import this repo as a **Vite** project:
+
+| Setting | Value |
+|---------|--------|
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+
+**Environment variable (Vercel only):**
+
+```env
+VITE_API_URL=https://your-api.onrender.com/api
+```
+
+`vercel.json` is included for React Router SPA routing.
+
+Redeploy Vercel whenever `VITE_API_URL` changes — Vite bakes it in at build time.
+
+### Env summary
+
+| Variable | Local | Render | Vercel |
+|----------|-------|--------|--------|
+| `MONGODB_URI` | ✅ | ✅ | ❌ |
+| `JWT_SECRET` | ✅ | ✅ | ❌ |
+| `JWT_EXPIRES_IN` | ✅ | ✅ | ❌ |
+| `FRONTEND_URL` | optional | ✅ | ❌ |
+| `CORS_ORIGINS` | optional | optional | ❌ |
+| `PORT` | ✅ | ❌ (auto) | ❌ |
+| `VITE_API_URL` | ✅ | ❌ | ✅ |
+
+Copy `.env.example` to `.env` for local development.
