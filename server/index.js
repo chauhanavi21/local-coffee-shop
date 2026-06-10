@@ -6,8 +6,10 @@ import authRouter from "./routes/auth.js";
 import cartRouter from "./routes/cart.js";
 import menuRouter from "./routes/menu.js";
 import ordersRouter from "./routes/orders.js";
+import contactRouter from "./routes/contact.js";
 import { MEMBER_OFFERS } from "./data/offers.js";
 import { seedMenuIfEmpty } from "./lib/seedMenu.js";
+import { seedContactInfo } from "./lib/seedContact.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,11 +27,19 @@ function getAllowedOrigins() {
 }
 
 const allowedOrigins = getAllowedOrigins();
+const allowVercelPreviews = process.env.ALLOW_VERCEL_PREVIEWS === "true";
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  if (allowVercelPreviews && origin.endsWith(".vercel.app")) return true;
+  return false;
+}
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }
@@ -54,6 +64,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/menu", menuRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", ordersRouter);
+app.use("/api/contact", contactRouter);
 
 function validateEnv() {
   const uri = process.env.MONGODB_URI;
@@ -97,15 +108,19 @@ async function start() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log("MongoDB connected");
     await seedMenuIfEmpty();
+    await seedContactInfo();
   } catch (err) {
     console.error("MongoDB connection failed:", err.message);
     process.exit(1);
   }
 
-  app.listen(PORT, () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log(`API running on port ${PORT}`);
     if (allowedOrigins.length > 2) {
       console.log("CORS allowed origins:", allowedOrigins.join(", "));
+    }
+    if (allowVercelPreviews) {
+      console.log("CORS: *.vercel.app preview URLs allowed");
     }
   });
 }

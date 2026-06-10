@@ -126,6 +126,14 @@ export const api = {
       featured: MenuItemDTO[];
     }>("/menu"),
 
+  getContact: () => request<{ contact: ContactInfoDTO }>("/contact"),
+
+  submitContactMessage: (body: ContactMessageInput) =>
+    request<{ ok: boolean; message: { id: string; createdAt: string } }>(
+      "/contact/messages",
+      { method: "POST", body: JSON.stringify(body) },
+    ),
+
   health: () => request<{ ok: boolean; db: boolean }>("/health"),
 };
 
@@ -206,4 +214,57 @@ export interface CartDTO {
     pickupTime: string;
     orderNotes: string;
   };
+}
+
+export interface ContactSectionDTO {
+  id: string;
+  icon: string;
+  label: string;
+  value: string;
+  href?: string;
+}
+
+export interface ContactInfoDTO {
+  businessName: string;
+  shortName: string;
+  tagline: string;
+  description: string;
+  hero: {
+    eyebrow: string;
+    title: string;
+    image: string;
+  };
+  form: {
+    title: string;
+    description: string;
+  };
+  address: {
+    street: string;
+    place: string;
+    city: string;
+    state: string;
+    zip: string;
+    full: string;
+  };
+  phone: string;
+  phoneHref: string;
+  email: string;
+  emailHref: string;
+  website: string;
+  facebook: string;
+  hours: {
+    weekday: string;
+    sunday: string;
+    summary: string;
+  };
+  mapQuery: string;
+  sections: ContactSectionDTO[];
+}
+
+export interface ContactMessageInput {
+  firstName: string;
+  lastName: string;
+  email: string;
+  subject: string;
+  message: string;
 }

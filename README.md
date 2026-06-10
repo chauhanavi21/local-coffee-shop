@@ -92,7 +92,8 @@ Create a **Web Service** from this repo:
 
 | Setting | Value |
 |---------|--------|
-| Build Command | `npm install` |
+| Root Directory | `noir-bean-coffee` (if deploying from monorepo root) |
+| Build Command | `npm install --omit=dev` |
 | Start Command | `npm start` |
 | Health Check | `/api/health` |
 
@@ -103,6 +104,7 @@ MONGODB_URI=mongodb+srv://...
 JWT_SECRET=long-random-production-secret
 JWT_EXPIRES_IN=7d
 FRONTEND_URL=https://your-app.vercel.app
+ALLOW_VERCEL_PREVIEWS=true
 ```
 
 Optional for Vercel preview URLs:
@@ -121,6 +123,7 @@ Import this repo as a **Vite** project:
 
 | Setting | Value |
 |---------|--------|
+| Root Directory | `noir-bean-coffee` (if deploying from monorepo root) |
 | Build Command | `npm run build` |
 | Output Directory | `dist` |
 
@@ -143,6 +146,7 @@ Redeploy Vercel whenever `VITE_API_URL` changes — Vite bakes it in at build ti
 | `JWT_EXPIRES_IN` | ✅ | ✅ | ❌ |
 | `FRONTEND_URL` | optional | ✅ | ❌ |
 | `CORS_ORIGINS` | optional | optional | ❌ |
+| `ALLOW_VERCEL_PREVIEWS` | optional | ✅ | ❌ |
 | `PORT` | ✅ | ❌ (auto) | ❌ |
 | `VITE_API_URL` | ✅ | ❌ | ✅ |
 
