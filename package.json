@@ -9,6 +9,7 @@
     "dev:server": "node server/index.js",
     "build": "tsc -b && vite build",
     "start": "node server/index.js",
+    "prepare": "node scripts/setup-githooks.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },

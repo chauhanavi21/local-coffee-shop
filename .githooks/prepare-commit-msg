@@ -1,0 +1,5 @@
+#!/bin/sh
+# Strips Cursor co-author trailers from commit messages
+sed -i.bak '/Co-authored-by: Cursor/d; /cursoragent@cursor\.com/d' "$1" 2>/dev/null || \
+  sed -i '/Co-authored-by: Cursor/d; /cursoragent@cursor\.com/d' "$1"
+rm -f "$1.bak"

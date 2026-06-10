@@ -1,0 +1,6 @@
+---
+description: Keep git commits free of tool attribution trailers
+alwaysApply: true
+---
+
+Never add "Made-with: Cursor", "Co-authored-by: Cursor", "Co-authored-by: cursoragent", or any similar attribution trailer to commit messages or pull requests.
