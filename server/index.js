@@ -64,16 +64,23 @@ function validateEnv() {
 
   const jwtSecret = process.env.JWT_SECRET?.trim();
   if (!jwtSecret) {
-    console.error("JWT_SECRET is not set.");
+    console.error("JWT_SECRET is not set. Add it in Render → Environment.");
     process.exit(1);
   }
 
-  if (
-    isProduction &&
-    jwtSecret === "change-this-to-a-long-random-secret-in-production"
-  ) {
-    console.error("JWT_SECRET must be changed from the default before production deploy.");
+  if (isProduction && jwtSecret.length < 16) {
+    console.error("JWT_SECRET must be at least 16 characters in production.");
     process.exit(1);
+  }
+
+  const placeholderSecrets = new Set([
+    "change-this-to-a-long-random-secret-in-production",
+    "generate-a-long-random-secret",
+  ]);
+  if (isProduction && placeholderSecrets.has(jwtSecret)) {
+    console.warn(
+      "JWT_SECRET is still a placeholder — set a unique random value in Render → Environment for production security.",
+    );
   }
 
   if (isProduction && !process.env.FRONTEND_URL) {
